@@ -19,9 +19,7 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+        setNameIfEmpty(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Добавлен новый объект в коллекцию(users): {}", user);
@@ -31,6 +29,7 @@ public class UserController {
     @PutMapping
     public User updateUser(@Valid @RequestBody User newUser) {
         if (users.containsKey(newUser.getId())) {
+            setNameIfEmpty(newUser);
             users.put(newUser.getId(), newUser);
             log.info("Изменен объект в коллекции(users), теперь новый объект: {}", newUser);
         } else {
@@ -42,7 +41,14 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
+        log.info("Получены объекты коллекции(users): {}", users.values());
         return users.values();
+    }
+
+    private void setNameIfEmpty(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 
     private int getNextId() {

@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -17,10 +14,10 @@ public class Film {
     @NotBlank(message = "Название не может быть пустым")
     private String name;
 
-    @NotBlank(message = "Описание не может быть пустым")
     @Size(max = 200, message = "Максимальная длина описания — 200 символов")
     private String description;
 
+    @NotNull(message = "Дата релиза не должна быть пустой")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
@@ -28,6 +25,6 @@ public class Film {
 
     @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
-        return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
+        return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
 }
