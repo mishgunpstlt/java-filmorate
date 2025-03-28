@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(of = "id")
@@ -27,4 +29,6 @@ public class Film {
     public boolean isReleaseDateValid() {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
+
+    private Set<Integer> likes = new HashSet<>();
 }
