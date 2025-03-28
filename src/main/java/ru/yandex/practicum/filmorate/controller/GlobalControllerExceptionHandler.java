@@ -20,7 +20,7 @@ class GlobalControllerExceptionHandler {
         return Map.of(
                 "error", "Not found",
                 "message", e.getMessage()
-        )   ;
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
