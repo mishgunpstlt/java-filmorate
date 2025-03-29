@@ -16,11 +16,11 @@ import java.util.Map;
 class GlobalControllerExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+    public Map<String, String> handleNotFoundException(NotFoundException e) {
+        return Map.of(
                 "error", "Not found",
                 "message", e.getMessage()
-        ));
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -31,5 +31,14 @@ class GlobalControllerExceptionHandler {
                 "error", "Validation failed",
                 "message", e.getMessage()
         ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleGeneralException(Exception e) {
+        log.error("Unexpected error: {}", e.getMessage());
+        return Map.of(
+                "error", "Internal server error",
+                "message", e.getMessage());
     }
 }
