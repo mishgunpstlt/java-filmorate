@@ -30,14 +30,10 @@ public class UserService {
     }
 
     public User updateUser(User newUser) {
-        if (userStorage.findUserById(newUser.getId()) != null) {
-            setNameIfEmpty(newUser);
-            userStorage.updateUser(newUser);
-            log.info("Изменен объект в коллекции(users), теперь новый объект: {}", newUser);
-        } else {
-            log.error("Пользователь для обновления с id={} не найден", newUser.getId());
-            throw new NotFoundException("Пользователь для обновления с id=" + newUser.getId() + " не найден");
-        }
+        User oldUser = getExistsUser(newUser.getId());
+        setNameIfEmpty(newUser);
+        userStorage.updateUser(newUser);
+        log.info("Изменен объект в коллекции(users), теперь новый объект: {}", newUser);
         return newUser;
     }
 
@@ -46,14 +42,19 @@ public class UserService {
         return userStorage.getUsers();
     }
 
-    public User getUserById(int id) {
-        if (userStorage.findUserById(id) != null) {
-            log.info("Пользователь с id={} найден", id);
-            return userStorage.findUserById(id);
+    private User getExistsUser(int userId) {
+        User user = userStorage.findUserById(userId);
+        if (user != null) {
+            log.info("Пользователь с id={} найден", userId);
+            return user;
         } else {
-            log.error("Пользователь с id={} не найден", id);
-            throw new NotFoundException("Пользователь с id=" + id + " не найден");
+            log.error("Пользователь с id={} не найден", userId);
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
         }
+    }
+
+    public User getUserById(int id) {
+        return getExistsUser(id);
     }
 
     public void addFriend(int userId, int friendId) {

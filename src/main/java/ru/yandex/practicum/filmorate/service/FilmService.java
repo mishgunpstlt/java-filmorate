@@ -31,13 +31,9 @@ public class FilmService {
     }
 
     public Film updateFilm(Film newFilm) {
-        if (filmStorage.findFilmById(newFilm.getId()) != null) {
-            filmStorage.updateFilm(newFilm);
-            log.info("Изменен объект в коллекции(films), теперь новый объект: {}", newFilm);
-        } else {
-            log.error("Фильм для обновления с id={} не найден", newFilm.getId());
-            throw new NotFoundException("Фильм для обновления с id=" + newFilm.getId() + " не найден");
-        }
+        Film oldFilm = getExsitsFilm(newFilm.getId());
+        filmStorage.updateFilm(newFilm);
+        log.info("Изменен объект в коллекции(films), теперь новый объект: {}", newFilm);
         return newFilm;
     }
 
@@ -46,14 +42,18 @@ public class FilmService {
         return filmStorage.getFilms();
     }
 
-    public Film getFilmById(int id) {
-        if (filmStorage.findFilmById(id) != null) {
-            log.info("Фильм с id={} найден", id);
-            return filmStorage.findFilmById(id);
+    private Film getExsitsFilm(int filmId) {
+        if (filmStorage.findFilmById(filmId) != null) {
+            log.info("Фильм с id={} найден", filmId);
+            return filmStorage.findFilmById(filmId);
         } else {
-            log.error("Фильм с id={} не найден", id);
-            throw new NotFoundException("Фильм с id=" + id + " не найден");
+            log.error("Фильм с id={} не найден", filmId);
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден");
         }
+    }
+
+    public Film getFilmById(int id) {
+        return  getExsitsFilm(id);
     }
 
     public void addLike(int filmId, int userId) {
