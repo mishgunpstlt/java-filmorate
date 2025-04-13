@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -29,5 +30,5 @@ public class User {
     private LocalDate birthday;
 
     @JsonIgnore
-    private Set<User> friends = new HashSet<>();
+    private Set<Friendship> friends = new HashSet<>();
 }

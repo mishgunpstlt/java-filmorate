@@ -4,11 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.RelationshipException;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -66,8 +69,8 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        user.getFriends().add(friend);
-        friend.getFriends().add(user);
+        user.getFriends().add(new Friendship(userId, friendId, StatusFriendship.CONFIRMED));
+        friend.getFriends().add(new Friendship(friendId, userId, StatusFriendship.CONFIRMED));
         log.info("Пользователь с id={} стал другом пользователя с id={}", userId, friendId);
     }
 
@@ -80,21 +83,26 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        user.getFriends().remove(friend);
-        friend.getFriends().remove(user);
+        user.getFriends().removeIf(f -> f.getAddresseeId() == friendId);
+        friend.getFriends().removeIf(f -> f.getAddresseeId() == userId);
         log.info("Пользователь с id={} удалил пользователя с id={} из списка друзей", userId, friendId);
     }
 
-    public Set<User> findMutualFriends(int userId, int friendId) {
+    public Set<Integer> findMutualFriends(int userId, int friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        Set<User> friendsUser = user.getFriends();
-        Set<User> friendsFriend = friend.getFriends();
+        Set<Integer> userFriendIds = user.getFriends().stream()
+                .map(Friendship::getAddresseeId)
+                .collect(Collectors.toSet());
 
-        friendsUser.retainAll(friendsFriend);
-        log.info("Общие друзья между пользователями с id={} и id={}: {}", userId, friendId, friendsUser);
-        return friendsUser;
+        Set<Integer> friendFriendIds = friend.getFriends().stream()
+                .map(Friendship::getAddresseeId)
+                .collect(Collectors.toSet());
+
+        userFriendIds.retainAll(friendFriendIds);
+        log.info("Общие друзья между пользователями с id={} и id={}: {}", userId, friendId, userFriendIds);
+        return userFriendIds;
     }
 
     private void setNameIfEmpty(User user) {

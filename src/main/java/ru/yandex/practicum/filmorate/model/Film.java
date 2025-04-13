@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.yandex.practicum.filmorate.model.enumModels.Genre;
+import ru.yandex.practicum.filmorate.model.enumModels.MPA;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -30,4 +32,10 @@ public class Film {
     public boolean isReleaseDateValid() {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
+
+    @NotEmpty(message = "У фильма не может не быть жанра")
+    private Set<Genre> genres;
+
+    @NotBlank(message = "У фильма не может не быть МРА")
+    private MPA mpa;
 }
