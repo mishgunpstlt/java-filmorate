@@ -3,8 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
+import lombok.EqualsAndHashCode;    
 
 import java.time.LocalDate;
 import java.util.HashSet;
