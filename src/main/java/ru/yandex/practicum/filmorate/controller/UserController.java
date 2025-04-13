@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -51,12 +52,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Set<User> getFriends(@PathVariable int id) {
+    public Set<Friendship> getFriends(@PathVariable int id) {
         return userService.getUserById(id).getFriends();
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Set<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+    public Set<Integer> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
         return userService.findMutualFriends(id, otherId);
     }
 }

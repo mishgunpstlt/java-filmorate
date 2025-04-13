@@ -29,5 +29,5 @@ public class User {
     private LocalDate birthday;
 
     @JsonIgnore
-    private Set<User> friends = new HashSet<>();
+    private Set<Friendship> friends = new HashSet<>();
 }
