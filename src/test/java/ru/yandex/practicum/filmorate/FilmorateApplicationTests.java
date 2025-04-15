@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class FilmoRateApplicationTests {
+class FilmorateApplicationTests {
 
     private final FilmDbStorage filmStorage;
 
