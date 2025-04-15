@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -42,9 +43,13 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public FilmDto getFilmById(@PathVariable int id) {
+    public ResponseEntity<FilmDto> getFilmById(@PathVariable int id) {
         Optional<Film> film = filmService.getFilmById(id);
-        return FilmDto.toDto(film.get());
+        if (film.isPresent()) {
+            return ResponseEntity.ok(FilmDto.toDto(film.get()));
+        } else {
+            return ResponseEntity.notFound().build();  // 404 Not Found
+        }
     }
 
     @PutMapping("/{id}/like/{userId}")
