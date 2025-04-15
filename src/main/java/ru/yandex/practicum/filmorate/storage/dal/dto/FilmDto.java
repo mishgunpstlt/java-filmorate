@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.model.enumModels.Genre;
 import ru.yandex.practicum.filmorate.model.enumModels.MPA;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
@@ -26,11 +28,6 @@ public class FilmDto {
     private List<GenreDto> genres = new ArrayList<>();
     @NotNull(message = "У фильма не может не быть МРА")
     private MpaDto mpa;
-
-    @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
-    public boolean isReleaseDateValid() {
-        return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
-    }
 
     public static FilmDto toDto(Film film) {
         FilmDto dto = new FilmDto();
@@ -78,5 +75,10 @@ public class FilmDto {
         }
 
         return film;
+    }
+
+    @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
+    public boolean isReleaseDateValid() {
+        return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
 }

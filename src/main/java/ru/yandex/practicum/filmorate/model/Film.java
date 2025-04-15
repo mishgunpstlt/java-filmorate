@@ -27,15 +27,13 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
     private Set<Integer> likes = new HashSet<>();
+    @NotNull(message = "У фильма не может не быть жанра")
+    private Set<Genre> genres = new HashSet<>();
+    @NotNull(message = "У фильма не может не быть МРА")
+    private MPA mpa;
 
     @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
-
-    @NotNull(message = "У фильма не может не быть жанра")
-    private Set<Genre> genres = new HashSet<>();
-
-    @NotNull(message = "У фильма не может не быть МРА")
-    private MPA mpa;
 }

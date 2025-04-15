@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dal;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -147,13 +146,13 @@ public class FilmDbStorage implements FilmStorage {
 
     public List<Film> getPopularFilms(int count) {
         String sql = """
-        SELECT f.*, COUNT(l.user_id) AS like_count
-        FROM films f
-        LEFT JOIN likes l ON f.film_id = l.film_id
-        GROUP BY f.film_id
-        ORDER BY like_count DESC
-        LIMIT ?
-    """;
+                    SELECT f.*, COUNT(l.user_id) AS like_count
+                    FROM films f
+                    LEFT JOIN likes l ON f.film_id = l.film_id
+                    GROUP BY f.film_id
+                    ORDER BY like_count DESC
+                    LIMIT ?
+                """;
 
         List<Film> films = jdbc.query(sql, mapper, count);
         for (Film film : films) {

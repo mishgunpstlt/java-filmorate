@@ -15,10 +15,6 @@ public enum MPA {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     public static MPA fromId(int id) {
         return switch (id) {
             case 1 -> G;
@@ -29,6 +25,11 @@ public enum MPA {
             default -> throw new NotFoundException("Неизвестный id MPA: " + id);
         };
     }
+
+    public String getDescription() {
+        return description;
+    }
+
     public int getId() {
         return switch (this) {
             case G -> 1;

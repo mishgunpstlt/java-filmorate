@@ -123,11 +123,11 @@ public class UserDbStorage implements UserStorage {
 
     public List<User> findMutualFriends(int userId, int otherUserId) {
         String sql = """
-            SELECT u.* FROM users u
-            JOIN friends f1 ON u.user_id = f1.addressee_id
-            JOIN friends f2 ON u.user_id = f2.addressee_id
-            WHERE f1.requester_id = ? AND f2.requester_id = ?
-        """;
+                    SELECT u.* FROM users u
+                    JOIN friends f1 ON u.user_id = f1.addressee_id
+                    JOIN friends f2 ON u.user_id = f2.addressee_id
+                    WHERE f1.requester_id = ? AND f2.requester_id = ?
+                """;
         return jdbc.query(sql, mapper, userId, otherUserId);
     }
 }
