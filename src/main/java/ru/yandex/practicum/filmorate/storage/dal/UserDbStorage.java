@@ -89,25 +89,44 @@ public class UserDbStorage implements UserStorage {
     }
 
     public Friendship addFriend(int requesterId, int addresseeId) {
-        // Проверка: есть ли уже такая заявка
-        String sqlCheck = "SELECT status_id FROM friends WHERE requester_id = ? AND addressee_id = ?";
-        List<Integer> statuses = jdbc.queryForList(sqlCheck, Integer.class, requesterId, addresseeId);
+        // Проверяем: существует ли обратная заявка
+        String checkReverseSql = "SELECT status_id FROM friends WHERE requester_id = ? AND addressee_id = ?";
+        List<Integer> reverseStatuses = jdbc.queryForList(checkReverseSql, Integer.class, addresseeId, requesterId);
 
-        if (statuses.isEmpty()) {
-            // Если заявки нет, то создаем новую
-            String insertUnconfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
-            jdbc.update(insertUnconfirmed, requesterId, addresseeId, StatusFriendship.UNCONFIRMED.getId());
-            return new Friendship(requesterId, addresseeId, StatusFriendship.UNCONFIRMED);
-        } else if (statuses.get(0) == StatusFriendship.UNCONFIRMED.getId()) {
-            // Если заявка уже есть, обновляем ее статус на CONFIRMED
-            String updateConfirmed = "UPDATE friends SET status_id = ? WHERE requester_id = ? OR addressee_id = ?";
-            jdbc.update(updateConfirmed, StatusFriendship.CONFIRMED.getId(), requesterId, addresseeId);
+        boolean reverseExists = !reverseStatuses.isEmpty();
+        boolean reverseIsUnconfirmed = reverseExists && reverseStatuses.get(0) == StatusFriendship.UNCONFIRMED.getId();
+
+        String checkDirectSql = "SELECT COUNT(*) FROM friends WHERE requester_id = ? AND addressee_id = ?";
+        Integer directCount = jdbc.queryForObject(checkDirectSql, Integer.class, requesterId, addresseeId);
+
+        boolean directExists = directCount != null && directCount > 0;
+
+        if (reverseIsUnconfirmed) {
+            if (!directExists) {
+                // Добавляем прямую запись
+                String insertConfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
+                jdbc.update(insertConfirmed, requesterId, addresseeId, StatusFriendship.CONFIRMED.getId());
+            } else {
+                // Обновляем прямую запись
+                String updateDirect = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
+                jdbc.update(updateDirect, StatusFriendship.CONFIRMED.getId(), requesterId, addresseeId);
+            }
+
+            // Обновляем обратную запись
+            String updateReverse = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
+            jdbc.update(updateReverse, StatusFriendship.CONFIRMED.getId(), addresseeId, requesterId);
+
             return new Friendship(requesterId, addresseeId, StatusFriendship.CONFIRMED);
         }
 
-        return null;
-    }
+        if (!directExists) {
+            String insertUnconfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
+            jdbc.update(insertUnconfirmed, requesterId, addresseeId, StatusFriendship.UNCONFIRMED.getId());
+            return new Friendship(requesterId, addresseeId, StatusFriendship.UNCONFIRMED);
+        }
 
+        return null; // Уже существует или не требует действий
+    }
 
     public void removeFriend(int requesterId, int addresseeId) {
         String sql = "DELETE FROM friends WHERE requester_id = ? AND addressee_id = ?";

@@ -67,6 +67,7 @@ public class UserService {
         getExistsUser(userId);
         getExistsUser(friendId);
 
+
         log.info("Пользователь с id={} стал другом пользователя с id={}", userId, friendId);
         return userDbStorage.addFriend(userId, friendId);
     }
