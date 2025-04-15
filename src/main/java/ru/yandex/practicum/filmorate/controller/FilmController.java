@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.dal.dto.FilmDto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/films")
@@ -21,13 +23,17 @@ public class FilmController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Film addFilm(@Valid @RequestBody Film film) {
-        return filmService.addFilm(film);
+    public FilmDto addFilm(@Valid @RequestBody FilmDto filmDto) {
+        Film film = FilmDto.fromDto(filmDto);
+        Film savedFilm = filmService.addFilm(film);
+        return FilmDto.toDto(savedFilm);
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film newFilm) {
-        return filmService.updateFilm(newFilm);
+    public FilmDto updateFilm(@Valid @RequestBody FilmDto filmDto) {
+        Film film = FilmDto.fromDto(filmDto);
+        Film updatedFilm = filmService.updateFilm(film);
+        return FilmDto.toDto(updatedFilm);
     }
 
     @GetMapping
@@ -36,8 +42,9 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable int id) {
-        return filmService.getFilmById(id);
+    public FilmDto getFilmById(@PathVariable int id) {
+        Optional<Film> film = filmService.getFilmById(id);
+        return FilmDto.toDto(film.get());
     }
 
     @PutMapping("/{id}/like/{userId}")

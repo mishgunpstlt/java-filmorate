@@ -33,9 +33,9 @@ public class Film {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
 
-    @NotEmpty(message = "У фильма не может не быть жанра")
-    private Set<Genre> genres;
+    @NotNull(message = "У фильма не может не быть жанра")
+    private Set<Genre> genres = new HashSet<>();
 
-    @NotBlank(message = "У фильма не может не быть МРА")
+    @NotNull(message = "У фильма не может не быть МРА")
     private MPA mpa;
 }

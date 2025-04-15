@@ -8,6 +8,6 @@ import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
 @AllArgsConstructor
 public class Friendship {
     private int requesterId;
-    private int addresseeId;
+    private Integer addresseeId;
     private StatusFriendship status;
 }
