@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.dal.dto.FilmDto;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/films")
@@ -38,8 +39,10 @@ public class FilmController {
     }
 
     @GetMapping
-    public Collection<Film> getFilms() {
-        return filmService.getFilms();
+    public Collection<FilmDto> getFilms() {
+        return filmService.getFilms().stream()
+                .map(FilmDto::toDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -63,7 +66,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getPopularFilms(count).stream()
+                .map(FilmDto::toDto)
+                .collect(Collectors.toList());
     }
 }
