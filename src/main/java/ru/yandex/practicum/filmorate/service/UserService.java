@@ -6,48 +6,47 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.RelationshipException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserDbStorage userDbStorage;
 
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserService(UserDbStorage userDbStorage) {
+        this.userDbStorage = userDbStorage;
     }
 
     public User addUser(User user) {
         setNameIfEmpty(user);
-        user.setId(getNextId());
-        userStorage.addUser(user);
-        log.info("Добавлен новый объект в коллекцию(users): {}", user);
-        return user;
+        User createUser = userDbStorage.addUser(user);
+        log.info("Добавлен новый объект в таблицу users: {}", createUser);
+        return createUser;
     }
 
     public User updateUser(User newUser) {
-        User oldUser = getExistsUser(newUser.getId());
+        getExistsUser(newUser.getId());
         setNameIfEmpty(newUser);
-        userStorage.updateUser(newUser);
-        log.info("Изменен объект в коллекции(users), теперь новый объект: {}", newUser);
-        return newUser;
+        User updatedUser = userDbStorage.updateUser(newUser);
+        log.info("Изменен объект в таблице users, теперь новый объект: {}", updatedUser);
+        return updatedUser;
     }
 
     public Collection<User> getUsers() {
-        log.info("Получены объекты коллекции(users): {}", userStorage.getUsers());
-        return userStorage.getUsers();
+        log.info("Получены объекты коллекции(users): {}", userDbStorage.getUsers());
+        return userDbStorage.getUsers();
     }
 
-    private User getExistsUser(int userId) {
-        User user = userStorage.findUserById(userId);
-        if (user != null) {
+    private Optional<User> getExistsUser(int userId) {
+        Optional<User> user = userDbStorage.findUserById(userId);
+        if (user.isPresent()) {
             log.info("Пользователь с id={} найден", userId);
             return user;
         } else {
@@ -56,22 +55,21 @@ public class UserService {
         }
     }
 
-    public User getUserById(int id) {
+    public Optional<User> getUserById(int id) {
         return getExistsUser(id);
     }
 
-    public void addFriend(int userId, int friendId) {
+    public Friendship addFriend(int userId, int friendId) {
         if (userId == friendId) {
             log.error("Попытка добавить себя же в друзья id={}", userId);
             throw new RelationshipException("Попытка добавить себя же в друзья id=" + userId);
         }
+        getExistsUser(userId);
+        getExistsUser(friendId);
 
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
 
-        user.getFriends().add(new Friendship(userId, friendId, StatusFriendship.CONFIRMED));
-        friend.getFriends().add(new Friendship(friendId, userId, StatusFriendship.CONFIRMED));
         log.info("Пользователь с id={} стал другом пользователя с id={}", userId, friendId);
+        return userDbStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
@@ -80,43 +78,30 @@ public class UserService {
             throw new RelationshipException("Попытка удалить себя же из друзьей id=" + userId);
         }
 
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        getExistsUser(userId);
+        getExistsUser(friendId);
 
-        user.getFriends().removeIf(f -> f.getAddresseeId() == friendId);
-        friend.getFriends().removeIf(f -> f.getAddresseeId() == userId);
+        userDbStorage.removeFriend(userId, friendId);
         log.info("Пользователь с id={} удалил пользователя с id={} из списка друзей", userId, friendId);
     }
 
-    public Set<Integer> findMutualFriends(int userId, int friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+    public Set<Friendship> getFriends(int userId) {
+        getExistsUser(userId);
+        return userDbStorage.getFriendsByUserId(userId);
+    }
 
-        Set<Integer> userFriendIds = user.getFriends().stream()
-                .map(Friendship::getAddresseeId)
-                .collect(Collectors.toSet());
+    public List<User> findMutualFriends(int userId, int friendId) {
+        getExistsUser(userId);
+        getExistsUser(friendId);
 
-        Set<Integer> friendFriendIds = friend.getFriends().stream()
-                .map(Friendship::getAddresseeId)
-                .collect(Collectors.toSet());
-
-        userFriendIds.retainAll(friendFriendIds);
-        log.info("Общие друзья между пользователями с id={} и id={}: {}", userId, friendId, userFriendIds);
-        return userFriendIds;
+        List<User> mutualFriends = userDbStorage.findMutualFriends(userId, friendId);
+        log.info("Общие друзья между пользователями с id={} и id={}: {}", userId, friendId, mutualFriends);
+        return mutualFriends;
     }
 
     private void setNameIfEmpty(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-    }
-
-    private int getNextId() {
-        int currentMaxId = userStorage.getUsers()
-                .stream()
-                .mapToInt(User::getId)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 }
