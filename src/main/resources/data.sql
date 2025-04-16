@@ -1,19 +1,19 @@
 -- Наполнение таблицы mpas
 INSERT INTO mpas (description) VALUES
-('G - General Audiences'),
-('PG - Parental Guidance Suggested'),
-('PG-13 - Parents Strongly Cautioned'),
-('R - Restricted'),
-('NC-17 - Adults Only');
+('G'),
+('PG'),
+('PG-13'),
+('R'),
+('NC-17');
 
 -- Наполнение таблицы genres
 INSERT INTO genres (name) VALUES
-('Comedy'),
-('Drama'),
-('Animation'),
-('Thriller'),
-('Documentary'),
-('Action');
+('Комедия'),
+('Драма'),
+('Мультфильм'),
+('Триллер'),
+('Документальный'),
+('Боевик');
 
 -- Наполнение таблицы status
 INSERT INTO status (name) VALUES

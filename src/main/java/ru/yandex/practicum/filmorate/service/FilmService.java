@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enumModels.Genre;
-import ru.yandex.practicum.filmorate.model.enumModels.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
@@ -85,20 +85,20 @@ public class FilmService {
         return genres;
     }
 
-    public Optional<Genre> getGenreById(int id) {
-        Optional<Genre> genre = filmDbStorage.getGenreById(id);
+    public Genre getGenreById(int id) {
+        Genre genre = filmDbStorage.getGenreById(id).get();
         log.info("Получен жанр по id={}: {}", id, genre);
         return genre;
     }
 
-    public Set<MPA> getMpas() {
-        Set<MPA> mpas = filmDbStorage.getMpas();
+    public Set<Mpa> getMpas() {
+        Set<Mpa> mpas = filmDbStorage.getMpas();
         log.info("Получены рейтинги: {}", mpas);
         return mpas;
     }
 
-    public Optional<MPA> getMpaById(int id) {
-        Optional<MPA> mpa = filmDbStorage.getMpaById(id);
+    public Mpa getMpaById(int id) {
+        Mpa mpa = filmDbStorage.getMpaById(id).get();
         log.info("Получен рейтинг по id={}: {}", id, mpa);
         return mpa;
     }

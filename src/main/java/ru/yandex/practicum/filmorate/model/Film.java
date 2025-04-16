@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.model.enumModels.Genre;
-import ru.yandex.practicum.filmorate.model.enumModels.MPA;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -30,7 +28,7 @@ public class Film {
     @NotNull(message = "У фильма не может не быть жанра")
     private Set<Genre> genres = new HashSet<>();
     @NotNull(message = "У фильма не может не быть МРА")
-    private MPA mpa;
+    private Mpa mpa;
 
     @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {

@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.enumModels.Genre;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.dal.dto.GenreDto;
 
@@ -24,14 +24,14 @@ public class GenreController {
     @GetMapping
     public List<GenreDto> getGenres() {
         return filmService.getGenres().stream()
-                .map(GenreDto::fromEnum)
+                .map(GenreDto::fromModel)
                 .sorted(Comparator.comparingInt(GenreDto::getId))
                 .toList();
     }
 
     @GetMapping("/{id}")
     public GenreDto getGenreById(@PathVariable int id) {
-        Genre genre = Genre.fromId(id);
-        return GenreDto.fromEnum(genre);
+        Genre genre = filmService.getGenreById(id);
+        return GenreDto.fromModel(genre);
     }
 }

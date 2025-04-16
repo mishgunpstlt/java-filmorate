@@ -4,8 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enumModels.Genre;
-import ru.yandex.practicum.filmorate.model.enumModels.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -40,11 +40,11 @@ public class FilmDto {
         dto.setGenres(
                 film.getGenres().stream()
                         .sorted(Comparator.comparingInt(Genre::getId)) // Сортировка по ID
-                        .map(GenreDto::fromEnum)
+                        .map(GenreDto::fromModel)
                         .collect(Collectors.toList()) // Используем List вместо Set
         );
 
-        dto.setMpa(MpaDto.fromEnum(film.getMpa()));
+        dto.setMpa(MpaDto.fromModel(film.getMpa()));
         return dto;
     }
 
@@ -60,7 +60,7 @@ public class FilmDto {
                 dto.getGenres().stream()
                         .map(genreDto -> {
                             try {
-                                return Genre.fromId(genreDto.getId());
+                                return new Genre(genreDto.getId(), genreDto.getName());
                             } catch (IllegalArgumentException e) {
                                 throw new NotFoundException("Неизвестный id жанра: " + genreDto.getId());
                             }
@@ -69,7 +69,7 @@ public class FilmDto {
         );
 
         try {
-            film.setMpa(MPA.fromId(dto.getMpa().getId()));
+            film.setMpa(new Mpa(dto.getMpa().getId(), dto.getMpa().getName()));
         } catch (IllegalArgumentException e) {
             throw new NotFoundException("Неизвестный id MPA: " + dto.getMpa().getId());
         }
@@ -81,4 +81,6 @@ public class FilmDto {
     public boolean isReleaseDateValid() {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
+
+
 }
