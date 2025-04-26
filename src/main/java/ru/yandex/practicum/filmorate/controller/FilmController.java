@@ -71,4 +71,11 @@ public class FilmController {
                 .map(FilmDto::toDto)
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/search")
+    public List<FilmDto> searchFilms(@RequestParam String query, @RequestParam String by) {
+        return filmService.searchFilms(query, by).stream()
+                .map(FilmDto::toDto)
+                .collect(Collectors.toList());
+    }
 }

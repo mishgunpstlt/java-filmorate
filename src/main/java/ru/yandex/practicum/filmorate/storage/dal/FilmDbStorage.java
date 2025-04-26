@@ -267,4 +267,35 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    public List<Film> searchByTitle(String query) {
+        String sql = "SELECT * FROM films WHERE LOWER(name) LIKE ?";
+        List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%");
+        enrichFilms(films);
+        for (Film film : films) {
+            addNameMpa(film);
+        }
+        return films;
+    }
+
+    public List<Film> searchByDirector(String query) {
+        String sql = "";
+        List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%");
+        enrichFilms(films);
+        for (Film film : films) {
+            addNameMpa(film);
+        }
+        return films;
+    }
+
+    public List<Film> searchByTitleAndDirector(String query) {
+        String sql = "";
+        List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%",
+                "%" + query.toLowerCase() + "%");
+        enrichFilms(films);
+        for (Film film : films) {
+            addNameMpa(film);
+        }
+        return films;
+    }
+
 }
