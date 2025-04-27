@@ -77,3 +77,14 @@ VALUES
 (1, 2, true),  -- User 2 likes Review 1
 (1, 3, false), -- User 3 dislikes Review 1
 (2, 1, false); -- User 1 dislikes Review 2
+-- Наполнение типов операций
+INSERT INTO operation (operation) VALUES
+('REMOVE'),
+('ADD'),
+('UPDATE');
+
+-- Наполнение типов событий
+INSERT INTO event_type (type) VALUES
+('LIKE'),
+('REVIEW'),
+('FRIEND');

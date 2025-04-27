@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.enumModels.EventType;
+import ru.yandex.practicum.filmorate.model.enumModels.Operation;
 import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
@@ -62,6 +64,7 @@ public class FilmService {
         userDbStorage.findUserById(userId);
         getExsitsFilm(filmId);
         filmDbStorage.addLike(filmId, userId);
+        userDbStorage.addFeed(userId, filmId, EventType.LIKE, Operation.ADD);
         log.info("Пользователь с id={} поставил лайк фильму с id={}", userId, filmId);
     }
 
@@ -69,6 +72,7 @@ public class FilmService {
         userDbStorage.findUserById(userId);
         getExsitsFilm(filmId);
         filmDbStorage.removeLike(filmId, userId);
+        userDbStorage.addFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
         log.info("Пользователь с id={} удалил лайк с фильма с id={}", userId, filmId);
     }
 
