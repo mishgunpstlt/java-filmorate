@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -73,8 +74,8 @@ public class FilmService {
         log.info("Пользователь с id={} удалил лайк с фильма с id={}", userId, filmId);
     }
 
-    public List<Film> getPopularFilms(int count) {
-        List<Film> popularFilms = filmDbStorage.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, int genreId, int year) {
+        List<Film> popularFilms = filmDbStorage.getPopularFilms(count, genreId, year);
         log.info("Получены популярные фильмы: {}", popularFilms);
         return popularFilms;
     }
