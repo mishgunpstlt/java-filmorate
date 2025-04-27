@@ -109,7 +109,7 @@ public class UserService {
         Set<Integer> userLikes = userDbStorage.getLikesByUserId(userId);
         if (userLikes.isEmpty()) {
             log.error("Пользователь не оставлял лайк ни одному фильму");
-            throw new NotFoundException("Пользователь не оставлял лайк ни одному фильму");
+            return List.of();
 
         }
         Map<Integer, Set<Integer>> allLikes = userDbStorage.getAllLikes();
@@ -131,16 +131,16 @@ public class UserService {
             }
         }
 
+        if (mostSimilarUserId == 1) {
+            log.error("Нет рекомендаций, т. к. всего один пользователь");
+            return List.of();
+        }
+
         Set<Integer> mostSimilarUserLikes = allLikes.get(mostSimilarUserId);
         mostSimilarUserLikes.removeAll(userLikes);
 
         List<Film> recommendedFilms = userDbStorage.getFilmsByIds(mostSimilarUserLikes);
-        if (recommendedFilms.isEmpty()) {
-            log.error("Нет рекомендаций для этого пользователя");
-            throw new NotFoundException("Нет рекомендаций для этого пользователя");
-
-        }
-        log.info("Найдены рекомендованный фильма для пользователя: {}", recommendedFilms);
+        log.info("Найдены рекомендованные фильмы для пользователя: {}", recommendedFilms);
         return recommendedFilms;
     }
 }
