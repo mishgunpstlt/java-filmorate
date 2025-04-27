@@ -4,14 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.RelationshipException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -103,5 +101,46 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public List<Film> getRecommendations(int userId) {
+        userDbStorage.findUserById(userId);
+
+        Set<Integer> userLikes = userDbStorage.getLikesByUserId(userId);
+        if (userLikes.isEmpty()) {
+            log.error("Пользователь не оставлял лайк ни одному фильму");
+            throw new NotFoundException("Пользователь не оставлял лайк ни одному фильму");
+
+        }
+        Map<Integer, Set<Integer>> allLikes = userDbStorage.getAllLikes();
+
+        int mostSimilarUserId = -1;
+        int maxCommonLikes = -1;
+
+        for (Map.Entry<Integer, Set<Integer>> entry : allLikes.entrySet()) {
+            int otherUserId = entry.getKey();
+            if (otherUserId == userId) continue;
+
+            Set<Integer> otherUserLikes = entry.getValue();
+            Set<Integer> common = new HashSet<>(userLikes);
+            common.retainAll(otherUserLikes);
+
+            if (common.size() > maxCommonLikes) {
+                maxCommonLikes = common.size();
+                mostSimilarUserId = otherUserId;
+            }
+        }
+
+        Set<Integer> mostSimilarUserLikes = allLikes.get(mostSimilarUserId);
+        mostSimilarUserLikes.removeAll(userLikes);
+
+        List<Film> recommendedFilms = userDbStorage.getFilmsByIds(mostSimilarUserLikes);
+        if (recommendedFilms.isEmpty()) {
+            log.error("Нет рекомендаций для этого пользователя");
+            throw new NotFoundException("Нет рекомендаций для этого пользователя");
+
+        }
+        log.info("Найдены рекомендованный фильма для пользователя: {}", recommendedFilms);
+        return recommendedFilms;
     }
 }
