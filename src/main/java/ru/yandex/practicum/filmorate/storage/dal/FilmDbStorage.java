@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.storage.dal.mappers.MpaRowMapper;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
