@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -29,6 +31,8 @@ public class Film {
     private Set<Genre> genres = new HashSet<>();
     @NotNull(message = "У фильма не может не быть МРА")
     private Mpa mpa;
+
+    private Set<Director> directors = new HashSet<>();
 
     @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
