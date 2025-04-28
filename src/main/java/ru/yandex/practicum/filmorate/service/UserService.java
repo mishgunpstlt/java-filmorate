@@ -132,7 +132,7 @@ public class UserService {
         }
 
         if (mostSimilarUserId == 1) {
-            log.error("Нет рекомендаций, т. к. всего один пользователь");
+            log.error("Нет рекомендаций: только один пользователь или нет общих лайков");
             return List.of();
         }
 
