@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.RelationshipException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
 import java.util.*;
@@ -17,9 +18,11 @@ import java.util.*;
 public class UserService {
 
     private final UserDbStorage userDbStorage;
+    private final FilmDbStorage filmDbStorage;
 
-    public UserService(UserDbStorage userDbStorage) {
+    public UserService(UserDbStorage userDbStorage, FilmDbStorage filmDbStorage) {
         this.userDbStorage = userDbStorage;
+        this.filmDbStorage = filmDbStorage;
     }
 
     public User addUser(User user) {
@@ -139,7 +142,7 @@ public class UserService {
         Set<Integer> mostSimilarUserLikes = allLikes.get(mostSimilarUserId);
         mostSimilarUserLikes.removeAll(userLikes);
 
-        List<Film> recommendedFilms = userDbStorage.getFilmsByIds(mostSimilarUserLikes);
+        List<Film> recommendedFilms = filmDbStorage.getFilmsByIds(mostSimilarUserLikes);
         log.info("Найдены рекомендованные фильмы для пользователя: {}", recommendedFilms);
         return recommendedFilms;
     }

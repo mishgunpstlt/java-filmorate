@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.dal;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -169,18 +168,5 @@ public class UserDbStorage implements UserStorage {
             }
             return usersLikes;
         });
-    }
-
-    public List<Film> getFilmsByIds(Set<Integer> mostSimilarUserLikes) {
-        String ids = String.join(",", Collections.nCopies(mostSimilarUserLikes.size(), "?"));
-
-        try {
-            String sql = "SELECT * FROM films WHERE film_id IN (" + ids + ")";
-            return jdbc.query(sql, filmMapper, mostSimilarUserLikes.toArray());
-        } catch (DataAccessException e) {
-            log.error("Ошибка при получении фильмов по списку id: {}", mostSimilarUserLikes, e);
-            throw new RuntimeException("Не удалось получить рекомендации для пользователя", e);
-        }
-
     }
 }
