@@ -165,17 +165,10 @@ public class FilmDbStorage implements FilmStorage {
         return new HashSet<>(jdbc.query(sql, mapperGenre, filmId));
     }
 
-    public List<Film> getPopularFilms(int count) {
-        String sql = """
-                    SELECT f.*, COUNT(l.user_id) AS like_count
-                    FROM films f
-                    LEFT JOIN likes l ON f.film_id = l.film_id
-                    GROUP BY f.film_id
-                    ORDER BY like_count DESC
-                    LIMIT ?
-                """;
+    public List<Film> getPopularFilms(int count, int genreId, int year) {
+        String sql = getPopularFilmsQuery(genreId, year);
 
-        List<Film> films = jdbc.query(sql, mapper, count);
+        List<Film> films = jdbc.query(sql, mapper, year, genreId, count);
         enrichFilms(films);
 
         for (Film film : films) {
@@ -285,4 +278,38 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    private String getPopularFilmsQuery(int genreId, int year) {
+        String variablePart;
+        if (genreId == 0 && year == 0) {
+            variablePart = """
+                    WHERE EXTRACT(YEAR FROM releaseDate) <> ?
+                    AND genre_id <> ?
+                """;
+        } else if (genreId == 0) {
+            variablePart = """
+                    WHERE EXTRACT(YEAR FROM releaseDate) = ?
+                    AND genre_id <> ?
+                """;
+        } else if (year == 0) {
+            variablePart = """
+                    WHERE EXTRACT(YEAR FROM releaseDate) <> ?
+                    AND genre_id = ?
+                """;
+        } else {
+            variablePart = """
+                    WHERE EXTRACT(YEAR FROM releaseDate) = ?
+                    AND genre_id = ?
+                """;
+        }
+        return """
+                   SELECT f.*, COUNT(DISTINCT l.user_id) AS like_count
+                   FROM films f
+                   LEFT JOIN likes l ON f.film_id = l.film_id
+                   LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+               """ + variablePart + """
+                   GROUP BY f.film_id
+                   ORDER BY like_count DESC
+                   LIMIT ?
+               """;
+    }
 }
