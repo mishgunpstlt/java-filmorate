@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dal;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -258,6 +259,23 @@ public class FilmDbStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Рейтинг с таким id не существует");
         }
+    }
+
+    public List<Film> getFilmsByIds(Set<Integer> mostSimilarUserLikes) {
+        String ids = String.join(",", Collections.nCopies(mostSimilarUserLikes.size(), "?"));
+
+        try {
+            String sql = "SELECT * FROM films WHERE film_id IN (" + ids + ")";
+            List<Film> films = jdbc.query(sql, mapper, mostSimilarUserLikes.toArray());
+            enrichFilms(films);
+            for (Film film : films) {
+                addNameMpa(film);
+            }
+            return films;
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Не удалось получить рекомендации для пользователя", e);
+        }
+
     }
 
     private String getPopularFilmsQuery(int genreId, int year) {
