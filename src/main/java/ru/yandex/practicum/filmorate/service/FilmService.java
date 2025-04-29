@@ -116,10 +116,6 @@ public class FilmService {
             result = filmDbStorage.searchByDirector(query);
         }
 
-        if (result.isEmpty()) {
-            throw new NotFoundException("Фильмы по подстроке " + "'" + query + "'" + " не найдены");
-        }
-
         log.info("Получен фильма с подстрокой = '{}', поиск по {}", query, by);
 
         return result.stream()

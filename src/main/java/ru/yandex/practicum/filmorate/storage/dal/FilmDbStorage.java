@@ -242,10 +242,12 @@ public class FilmDbStorage implements FilmStorage {
     private void enrichFilms(List<Film> films) {
         Map<Integer, Set<Genre>> genresMap = getAllGenresGroupedByFilmId();
         Map<Integer, Set<Integer>> likesMap = getAllLikesGroupedByFilmId();
+        Map<Integer, Set<Director>> directorsMap = getAllDirectorsGroupedByFilmId();
 
         for (Film film : films) {
             film.setGenres(genresMap.getOrDefault(film.getId(), Set.of()));
             film.setLikes(likesMap.getOrDefault(film.getId(), Set.of()));
+            film.setDirectors(directorsMap.getOrDefault(film.getId(), Set.of()));
         }
     }
 
@@ -279,6 +281,27 @@ public class FilmDbStorage implements FilmStorage {
                 int filmId = rs.getInt("film_id");
                 int userId = rs.getInt("user_id");
                 result.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
+            }
+            return result;
+        });
+    }
+
+    private Map<Integer, Set<Director>> getAllDirectorsGroupedByFilmId() {
+        String sql = """
+        SELECT fd.film_id, d.director_id, d.name
+        FROM film_director fd
+        JOIN directors d ON fd.director_id = d.director_id
+        """;
+
+        return jdbc.query(sql, rs -> {
+            Map<Integer, Set<Director>> result = new HashMap<>();
+            while (rs.next()) {
+                int filmId = rs.getInt("film_id");
+                Director director = new Director(
+                        rs.getInt("director_id"),
+                        rs.getString("name")
+                );
+                result.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
             }
             return result;
         });
@@ -326,7 +349,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> searchByDirector(String query) {
-        String sql = "";
+        String sql = """
+        SELECT f.* FROM films f
+        JOIN film_director fd ON f.film_id = fd.film_id
+        JOIN directors d ON fd.director_id = d.director_id
+        WHERE LOWER(d.name) LIKE ?
+        """;
         List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%");
         enrichFilms(films);
         for (Film film : films) {
@@ -336,7 +364,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> searchByTitleAndDirector(String query) {
-        String sql = "";
+        String sql = """
+        SELECT DISTINCT f.* FROM films f
+        LEFT JOIN film_director fd ON f.film_id = fd.film_id
+        LEFT JOIN directors d ON fd.director_id = d.director_id
+        WHERE LOWER(f.name) LIKE ?
+           OR LOWER(d.name) LIKE ?
+        """;
         List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%",
                 "%" + query.toLowerCase() + "%");
         enrichFilms(films);
