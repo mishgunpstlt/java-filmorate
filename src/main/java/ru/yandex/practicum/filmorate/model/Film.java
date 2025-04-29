@@ -30,6 +30,8 @@ public class Film {
     @NotNull(message = "У фильма не может не быть МРА")
     private Mpa mpa;
 
+    private Set<Director> directors = new HashSet<>();
+
     @AssertTrue(message = "Дата релиза фильма должна быть не раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
         return !releaseDate.isBefore(LocalDate.of(1895, 12, 28));

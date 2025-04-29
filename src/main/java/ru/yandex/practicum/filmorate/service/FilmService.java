@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -124,5 +125,29 @@ public class FilmService {
         return result.stream()
                 .sorted(Comparator.comparing((Film f) -> f.getLikes().size()).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public Director createDirector(Director director) {
+        return filmDbStorage.createDirector(director);
+    }
+
+    public Optional<Director> getDirectorById(int directorId) {
+        return filmDbStorage.getDirectorById(directorId);
+    }
+
+    public List<Director> getAllDirectors() {
+        return filmDbStorage.getAllDirectors();
+    }
+
+    public Director updateDirector(Director director) {
+        return filmDbStorage.updateDirector(director);
+    }
+
+    public void deleteDirector(int directorId) {
+        filmDbStorage.deleteDirector(directorId);
+    }
+
+    public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
+        return filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
     }
 }
