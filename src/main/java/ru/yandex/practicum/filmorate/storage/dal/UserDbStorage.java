@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
@@ -26,6 +27,7 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbc;
     private final RowMapper<User> mapper;
+    private final RowMapper<Film> filmMapper;
 
     @Override
     public User addUser(User user) {
@@ -148,5 +150,23 @@ public class UserDbStorage implements UserStorage {
                     WHERE f1.requester_id = ? AND f2.requester_id = ?
                 """;
         return jdbc.query(sql, mapper, userId, otherUserId);
+    }
+
+    public Set<Integer> getLikesByUserId(int userId) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return new HashSet<>(jdbc.queryForList(sql, Integer.class, userId));
+    }
+
+    public Map<Integer, Set<Integer>> getAllLikes() {
+        String sql = "SELECT * FROM likes";
+        return jdbc.query(sql, rs -> {
+            Map<Integer, Set<Integer>> usersLikes = new HashMap<>();
+            while (rs.next()) {
+                int userId = rs.getInt("user_id");
+                int filmId = rs.getInt("film_id");
+                usersLikes.computeIfAbsent(userId, k -> new HashSet<>()).add(filmId);
+            }
+            return usersLikes;
+        });
     }
 }
