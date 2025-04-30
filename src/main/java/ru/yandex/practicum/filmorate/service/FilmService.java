@@ -101,6 +101,7 @@ public class FilmService {
         log.info("Получен рейтинг по id={}: {}", id, mpa);
         return mpa;
     }
+
     public List<Film> searchFilms(String query, String by) {
         List<Film> result = new ArrayList<>();
 
