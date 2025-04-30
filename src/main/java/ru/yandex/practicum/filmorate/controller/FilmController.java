@@ -11,8 +11,11 @@ import ru.yandex.practicum.filmorate.storage.dal.dto.FilmDto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage.log;
 
 @RestController
 @RequestMapping("/films")
@@ -22,6 +25,36 @@ public class FilmController {
 
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
+    }
+
+    @GetMapping("/director/{directorId}")
+    public ResponseEntity<?> getFilmsByDirector(
+            @PathVariable int directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        try {
+            // Проверяем допустимость параметра sortBy
+            if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Параметр sortBy должен быть 'year' или 'likes'"));
+            }
+
+            // Получаем фильмы режиссера
+            List<Film> films = filmService.getFilmsByDirectorSorted(directorId, sortBy);
+
+            // Если список фильмов пуст, возвращаем 404
+            if (films.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Фильмы режиссера с ID " + directorId + " не найдены"));
+            }
+
+            // Возвращаем список фильмов с кодом 200
+            return ResponseEntity.ok(films);
+        } catch (Exception e) {
+            // Логируем ошибку для диагностики
+            log.error("Error while fetching films by director {}: {}", directorId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Ошибка сервера"));
+        }
     }
 
     @PostMapping
