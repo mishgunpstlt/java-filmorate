@@ -73,6 +73,10 @@ public class UserService {
         return userDbStorage.addFriend(userId, friendId);
     }
 
+    public void deleteUser(int userId) {
+        userDbStorage.deleteById(userId);
+    }
+
     public void removeFriend(int userId, int friendId) {
         if (userId == friendId) {
             log.error("Попытка удалить себя же из друзья id={}", userId);
