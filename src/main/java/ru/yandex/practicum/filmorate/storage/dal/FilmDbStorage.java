@@ -474,6 +474,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "DELETE FROM film_director WHERE film_id = ?";
         jdbc.update(sql, filmId);
     }
+
     public List<Film> getFilmsByIds(Set<Integer> mostSimilarUserLikes) {
         String ids = String.join(",", Collections.nCopies(mostSimilarUserLikes.size(), "?"));
 
@@ -495,34 +496,34 @@ public class FilmDbStorage implements FilmStorage {
         String variablePart;
         if (genreId == 0 && year == 0) {
             variablePart = """
-                    WHERE EXTRACT(YEAR FROM releaseDate) <> ?
-                    AND genre_id <> ?
-                """;
+                        WHERE EXTRACT(YEAR FROM releaseDate) <> ?
+                        AND genre_id <> ?
+                    """;
         } else if (genreId == 0) {
             variablePart = """
-                    WHERE EXTRACT(YEAR FROM releaseDate) = ?
-                    AND genre_id <> ?
-                """;
+                        WHERE EXTRACT(YEAR FROM releaseDate) = ?
+                        AND genre_id <> ?
+                    """;
         } else if (year == 0) {
             variablePart = """
-                    WHERE EXTRACT(YEAR FROM releaseDate) <> ?
-                    AND genre_id = ?
-                """;
+                        WHERE EXTRACT(YEAR FROM releaseDate) <> ?
+                        AND genre_id = ?
+                    """;
         } else {
             variablePart = """
-                    WHERE EXTRACT(YEAR FROM releaseDate) = ?
-                    AND genre_id = ?
-                """;
+                        WHERE EXTRACT(YEAR FROM releaseDate) = ?
+                        AND genre_id = ?
+                    """;
         }
         return """
-                   SELECT f.*, COUNT(DISTINCT l.user_id) AS like_count
-                   FROM films f
-                   LEFT JOIN likes l ON f.film_id = l.film_id
-                   LEFT JOIN film_genre fg ON f.film_id = fg.film_id
-               """ + variablePart + """
-                   GROUP BY f.film_id
-                   ORDER BY like_count DESC
-                   LIMIT ?
-               """;
+                    SELECT f.*, COUNT(DISTINCT l.user_id) AS like_count
+                    FROM films f
+                    LEFT JOIN likes l ON f.film_id = l.film_id
+                    LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                """ + variablePart + """
+                    GROUP BY f.film_id
+                    ORDER BY like_count DESC
+                    LIMIT ?
+                """;
     }
 }
