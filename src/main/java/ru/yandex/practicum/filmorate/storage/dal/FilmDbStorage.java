@@ -26,11 +26,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
+    public static final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private final JdbcTemplate jdbc;
     private final FilmRowMapper mapper;
     private final GenreRowMapper mapperGenre;
     private final MpaRowMapper mapperMpa;
-    public static final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
 
     @Override
     public Film addFilm(Film film) {
@@ -281,10 +281,10 @@ public class FilmDbStorage implements FilmStorage {
 
     private Map<Integer, Set<Director>> getAllDirectorsGroupedByFilmId() {
         String sql = """
-        SELECT fd.film_id, d.director_id, d.name
-        FROM film_director fd
-        JOIN directors d ON fd.director_id = d.director_id
-        """;
+                SELECT fd.film_id, d.director_id, d.name
+                FROM film_director fd
+                JOIN directors d ON fd.director_id = d.director_id
+                """;
 
         return jdbc.query(sql, rs -> {
             Map<Integer, Set<Director>> result = new HashMap<>();
@@ -330,6 +330,7 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Рейтинг с таким id не существует");
         }
     }
+
     public List<Film> searchByTitle(String query) {
         String sql = "SELECT * FROM films WHERE LOWER(name) LIKE ?";
         List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%");
@@ -342,11 +343,11 @@ public class FilmDbStorage implements FilmStorage {
 
     public List<Film> searchByDirector(String query) {
         String sql = """
-        SELECT f.* FROM films f
-        JOIN film_director fd ON f.film_id = fd.film_id
-        JOIN directors d ON fd.director_id = d.director_id
-        WHERE LOWER(d.name) LIKE ?
-        """;
+                SELECT f.* FROM films f
+                JOIN film_director fd ON f.film_id = fd.film_id
+                JOIN directors d ON fd.director_id = d.director_id
+                WHERE LOWER(d.name) LIKE ?
+                """;
         List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%");
         enrichFilms(films);
         for (Film film : films) {
@@ -357,12 +358,12 @@ public class FilmDbStorage implements FilmStorage {
 
     public List<Film> searchByTitleAndDirector(String query) {
         String sql = """
-        SELECT DISTINCT f.* FROM films f
-        LEFT JOIN film_director fd ON f.film_id = fd.film_id
-        LEFT JOIN directors d ON fd.director_id = d.director_id
-        WHERE LOWER(f.name) LIKE ?
-           OR LOWER(d.name) LIKE ?
-        """;
+                SELECT DISTINCT f.* FROM films f
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE LOWER(f.name) LIKE ?
+                   OR LOWER(d.name) LIKE ?
+                """;
         List<Film> films = jdbc.query(sql, mapper, "%" + query.toLowerCase() + "%",
                 "%" + query.toLowerCase() + "%");
         enrichFilms(films);
@@ -371,6 +372,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         return films;
     }
+
     public Director createDirector(Director director) {
         String sql = "INSERT INTO directors (name) VALUES (?)";
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();

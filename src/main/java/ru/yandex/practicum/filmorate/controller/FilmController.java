@@ -104,7 +104,7 @@ public class FilmController {
             @RequestParam(defaultValue = "10") @Min(0) int count,
             @RequestParam(defaultValue = "0") int genreId,
             @RequestParam(defaultValue = "0") int year
-            ) {
+    ) {
         return filmService.getPopularFilms(count, genreId, year).stream()
                 .map(FilmDto::toDto)
                 .collect(Collectors.toList());
