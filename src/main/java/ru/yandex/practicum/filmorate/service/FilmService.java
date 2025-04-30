@@ -127,4 +127,8 @@ public class FilmService {
     public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
         return filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
     }
+
+    public void deleteFilm(int filmId) {
+        filmDbStorage.deleteFilmById(filmId);
+    }
 }

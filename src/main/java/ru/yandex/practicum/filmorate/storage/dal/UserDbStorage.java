@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
@@ -81,6 +82,25 @@ public class UserDbStorage implements UserStorage {
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException ignored) {
             return Optional.empty();
+        }
+    }
+
+    public void deleteById(int userId) {
+        // Удаление записей из таблицы friends
+        String deleteFriendsSql = "DELETE FROM friends WHERE requester_id = ? OR addressee_id = ?";
+        jdbc.update(deleteFriendsSql, userId, userId);
+
+        // Удаление записей из таблицы likes
+        String deleteLikesSql = "DELETE FROM likes WHERE user_id = ?";
+        jdbc.update(deleteLikesSql, userId);
+
+        // Удаление пользователя из таблицы users
+        String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+        int rowsAffected = jdbc.update(deleteUserSql, userId);
+
+        // Если ни одна строка не была затронута, выбрасываем исключение
+        if (rowsAffected == 0) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
     }
 

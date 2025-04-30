@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -89,6 +90,16 @@ public class FilmController {
         }
     }
 
+    @DeleteMapping("/{filmId}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable int filmId) {
+        try {
+            filmService.deleteFilm(filmId);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found
+        }
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
@@ -104,7 +115,7 @@ public class FilmController {
             @RequestParam(defaultValue = "10") @Min(0) int count,
             @RequestParam(defaultValue = "0") int genreId,
             @RequestParam(defaultValue = "0") int year
-            ) {
+    ) {
         return filmService.getPopularFilms(count, genreId, year).stream()
                 .map(FilmDto::toDto)
                 .collect(Collectors.toList());
