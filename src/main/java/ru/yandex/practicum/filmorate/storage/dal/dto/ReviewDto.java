@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Review;
 
@@ -8,8 +9,11 @@ import ru.yandex.practicum.filmorate.model.Review;
 public class ReviewDto {
     private int reviewId;
     private String content;
+
     @JsonProperty("isPositive")
-    private boolean positive; // Переименовано из isPositive
+    @NotNull(message = "Not null")
+    private Boolean positive;
+
     private int userId;
     private int filmId;
     private int useful;
@@ -18,7 +22,7 @@ public class ReviewDto {
         ReviewDto dto = new ReviewDto();
         dto.setReviewId(review.getReviewId());
         dto.setContent(review.getContent());
-        dto.setPositive(review.isPositive()); // Используется setPositive
+        dto.setPositive(review.getPositive());
         dto.setUserId(review.getUserId());
         dto.setFilmId(review.getFilmId());
         dto.setUseful(review.getUseful());
@@ -29,7 +33,7 @@ public class ReviewDto {
         Review review = new Review();
         review.setReviewId(dto.getReviewId());
         review.setContent(dto.getContent());
-        review.setPositive(dto.isPositive()); // Используется isPositive
+        review.setPositive(dto.getPositive());
         review.setUserId(dto.getUserId());
         review.setFilmId(dto.getFilmId());
         review.setUseful(dto.getUseful());

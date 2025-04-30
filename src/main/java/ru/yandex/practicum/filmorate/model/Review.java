@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,8 +11,9 @@ public class Review {
     private int reviewId;
     private String content;
     @JsonProperty("isPositive")
-    private boolean positive; // Переименовано из isPositive
+    @NotNull(message = "Not null")
+    private Boolean positive;
     private int userId;
     private int filmId;
-    private int useful; // Рейтинг полезности
+    private int useful;
 }

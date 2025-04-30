@@ -22,14 +22,14 @@ public class ReviewController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReviewDto addReview(@Valid @RequestBody ReviewDto reviewDto) {
+    public ReviewDto addReview(@RequestBody @Valid ReviewDto reviewDto) {
         Review review = ReviewDto.toModel(reviewDto);
         Review savedReview = reviewService.addReview(review);
         return ReviewDto.fromModel(savedReview);
     }
 
     @PutMapping
-    public ReviewDto updateReview(@Valid @RequestBody ReviewDto reviewDto) {
+    public ReviewDto updateReview(@RequestBody @Valid ReviewDto reviewDto) {
         Review review = ReviewDto.toModel(reviewDto);
         Review updatedReview = reviewService.updateReview(review);
         return ReviewDto.fromModel(updatedReview);
