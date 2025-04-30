@@ -147,34 +147,33 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN directors d ON fd.director_id = d.director_id " +
                 "WHERE f.film_id = ?";
         try {
-            return Optional.ofNullable(jdbc.query(sql, rs -> {
-                Film film = null;
-                Set<Director> directors = new HashSet<>();
-
-                while (rs.next()) {
-                    if (film == null) {
-                        film = mapper.mapFilm(rs); // Используем метод mapFilm из FilmRowMapper
-                    }
-                    int directorId = rs.getInt("director_id");
-                    if (!rs.wasNull()) { // Проверяем, что режиссёр существует
-                        Director director = new Director();
-                        director.setDirectorId(directorId);
-                        director.setName(rs.getString("director_name"));
-                        directors.add(director);
-                    }
-                }
-
-                if (film != null) {
-                    film.setDirectors(directors);
-                    film.setLikes(getLikes(id));
-                    film.setGenres(getGenresOfFilm(id));
-                    addNameMpa(film);
-                }
-
-                return film;
-            }, id));
+            Film result = jdbc.queryForObject(sql, mapper, id);
+            result.setLikes(getLikes(id));
+            result.setGenres(getGenresOfFilm(id));
+            addNameMpa(result);
+            result.setDirectors(getDirectorsOfFilm(id));
+            return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException ignored) {
             return Optional.empty();
+        }
+    }
+
+    public void deleteFilmById(int filmId) {
+        // Удаление зависимых записей из таблицы film_genre
+        String deleteGenresSql = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbc.update(deleteGenresSql, filmId);
+
+        // Удаление записей из таблицы likes
+        String deleteLikesSql = "DELETE FROM likes WHERE film_id = ?";
+        jdbc.update(deleteLikesSql, filmId);
+
+        // Удаление фильма из таблицы films
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+        int rowsAffected = jdbc.update(deleteFilmSql, filmId);
+
+        // Если ни одна строка не была затронута, выбрасываем исключение
+        if (rowsAffected == 0) {
+            throw new NotFoundException("Фильм с id " + filmId + " не найден.");
         }
     }
 
@@ -339,7 +338,7 @@ public class FilmDbStorage implements FilmStorage {
             }, directorId);
             return Optional.ofNullable(director);
         } catch (EmptyResultDataAccessException ignored) {
-            return Optional.empty();
+            throw new NotFoundException("Режиссер с Id " + directorId + " не найден");
         }
     }
 
