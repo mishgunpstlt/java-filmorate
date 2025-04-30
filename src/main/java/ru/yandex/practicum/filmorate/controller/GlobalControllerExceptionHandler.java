@@ -7,8 +7,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 import java.util.Map;
 
@@ -41,5 +43,11 @@ class GlobalControllerExceptionHandler {
         return Map.of(
                 "error", "Internal server error",
                 "message", e.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequestException(BadRequestException ex) {
+        return new ErrorResponse(ex.getMessage());
     }
 }
