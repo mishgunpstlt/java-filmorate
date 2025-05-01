@@ -13,6 +13,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.enumModels.EventType;
+import ru.yandex.practicum.filmorate.model.enumModels.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.GenreRowMapper;
@@ -180,11 +182,13 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(int filmId, int userId) {
         String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
         jdbc.update(sql, filmId, userId);
+        UserDbStorage.addFeed(jdbc, userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     public void removeLike(int filmId, int userId) {
         String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
         jdbc.update(sql, filmId, userId);
+        UserDbStorage.addFeed(jdbc, userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
     public Set<Integer> getLikes(int filmId) {

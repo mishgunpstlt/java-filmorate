@@ -8,16 +8,21 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enumModels.EventType;
+import ru.yandex.practicum.filmorate.model.enumModels.Operation;
 import ru.yandex.practicum.filmorate.model.enumModels.StatusFriendship;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dal.mappers.FeedRowMapper;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.FriendshipRowMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -29,6 +34,7 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbc;
     private final RowMapper<User> mapper;
     private final RowMapper<Film> filmMapper;
+    private final FeedRowMapper mapperFeed;
 
     @Override
     public User addUser(User user) {
@@ -133,12 +139,14 @@ public class UserDbStorage implements UserStorage {
             String updateReverse = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
             jdbc.update(updateReverse, StatusFriendship.CONFIRMED.getId(), addresseeId, requesterId);
 
+            addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.ADD);
             return new Friendship(requesterId, addresseeId, StatusFriendship.CONFIRMED);
         }
 
         if (!directExists) {
             String insertUnconfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
             jdbc.update(insertUnconfirmed, requesterId, addresseeId, StatusFriendship.UNCONFIRMED.getId());
+            addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.ADD);
             return new Friendship(requesterId, addresseeId, StatusFriendship.UNCONFIRMED);
         }
 
@@ -148,6 +156,7 @@ public class UserDbStorage implements UserStorage {
     public void removeFriend(int requesterId, int addresseeId) {
         String sql = "DELETE FROM friends WHERE requester_id = ? AND addressee_id = ?";
         jdbc.update(sql, requesterId, addresseeId);
+        addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.REMOVE);
 
         String sqlCheck = "SELECT status_id FROM friends WHERE requester_id = ? AND addressee_id = ?";
         List<Integer> statuses = jdbc.queryForList(sqlCheck, Integer.class, addresseeId, requesterId);
@@ -183,5 +192,26 @@ public class UserDbStorage implements UserStorage {
             }
             return usersLikes;
         });
+    }
+
+    public static void addFeed(JdbcTemplate jdbc, int userId, int entityId, EventType eventType, Operation operation) {
+        String createFeed = "INSERT INTO feed(user_id, entity_id, event_type_id, operation_id, event_time) " +
+                "VALUES(?, ?, ?, ?, ?)";
+
+        if (jdbc.update(createFeed, userId, entityId, eventType.getId(), operation.getId(), LocalDateTime.now()) == 0) {
+            log.warn("Неправильный вызов метода добавления события");
+            throw new IllegalArgumentException("Неправильный вызов метода добавления события");
+        }
+    }
+
+    public Collection<Feed> getFeed(int userId) {
+        String getUserFeed = """
+                    SELECT * FROM feed f
+                    JOIN event_type ev ON f.event_type_id = ev.type_id
+                    JOIN operation o ON f.operation_id = o.operation_id
+                    WHERE user_id = ?
+                """;
+
+        return jdbc.query(getUserFeed, mapperFeed, userId);
     }
 }

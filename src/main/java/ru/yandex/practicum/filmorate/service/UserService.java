@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.RelationshipException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
@@ -102,6 +103,12 @@ public class UserService {
         List<User> mutualFriends = userDbStorage.findMutualFriends(userId, friendId);
         log.info("Общие друзья между пользователями с id={} и id={}: {}", userId, friendId, mutualFriends);
         return mutualFriends;
+    }
+
+    public Collection<Feed> getFeed(int userId) {
+        getExistsUser(userId);
+
+        return userDbStorage.getFeed(userId);
     }
 
     private void setNameIfEmpty(User user) {
