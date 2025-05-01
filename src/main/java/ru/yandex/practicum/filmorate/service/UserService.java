@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
-import ru.yandex.practicum.filmorate.model.enumModels.EventType;
-import ru.yandex.practicum.filmorate.model.enumModels.Operation;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
 import java.util.*;
@@ -73,7 +71,6 @@ public class UserService {
 
 
         log.info("Пользователь с id={} стал другом пользователя с id={}", userId, friendId);
-        userDbStorage.addFeed(userId, friendId, EventType.FRIEND, Operation.ADD);
         return userDbStorage.addFriend(userId, friendId);
     }
 
@@ -91,7 +88,6 @@ public class UserService {
         getExistsUser(friendId);
 
         userDbStorage.removeFriend(userId, friendId);
-        userDbStorage.addFeed(userId, friendId, EventType.FRIEND, Operation.REMOVE);
         log.info("Пользователь с id={} удалил пользователя с id={} из списка друзей", userId, friendId);
     }
 

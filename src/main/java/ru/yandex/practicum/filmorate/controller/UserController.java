@@ -5,10 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.dal.dto.FeedDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.FriendshipDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.UserDto;
@@ -100,8 +100,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/feed")
-    public Collection<Feed> getFeed(@PathVariable int id) {
-        System.out.println("раз");
-        return userService.getFeed(id);
+    public Collection<FeedDto> getFeed(@PathVariable int id) {
+        return FeedDto.fromModel(userService.getFeed(id));
     }
 }

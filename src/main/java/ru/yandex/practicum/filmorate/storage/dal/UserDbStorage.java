@@ -139,12 +139,14 @@ public class UserDbStorage implements UserStorage {
             String updateReverse = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
             jdbc.update(updateReverse, StatusFriendship.CONFIRMED.getId(), addresseeId, requesterId);
 
+            addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.ADD);
             return new Friendship(requesterId, addresseeId, StatusFriendship.CONFIRMED);
         }
 
         if (!directExists) {
             String insertUnconfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
             jdbc.update(insertUnconfirmed, requesterId, addresseeId, StatusFriendship.UNCONFIRMED.getId());
+            addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.ADD);
             return new Friendship(requesterId, addresseeId, StatusFriendship.UNCONFIRMED);
         }
 
@@ -154,6 +156,7 @@ public class UserDbStorage implements UserStorage {
     public void removeFriend(int requesterId, int addresseeId) {
         String sql = "DELETE FROM friends WHERE requester_id = ? AND addressee_id = ?";
         jdbc.update(sql, requesterId, addresseeId);
+        addFeed(jdbc, requesterId, addresseeId, EventType.FRIEND, Operation.REMOVE);
 
         String sqlCheck = "SELECT status_id FROM friends WHERE requester_id = ? AND addressee_id = ?";
         List<Integer> statuses = jdbc.queryForList(sqlCheck, Integer.class, addresseeId, requesterId);
@@ -191,7 +194,7 @@ public class UserDbStorage implements UserStorage {
         });
     }
 
-    public void addFeed(int userId, int entityId, EventType eventType, Operation operation) {
+    public static void addFeed(JdbcTemplate jdbc, int userId, int entityId, EventType eventType, Operation operation) {
         String createFeed = "INSERT INTO feed(user_id, entity_id, event_type_id, operation_id, event_time) " +
                 "VALUES(?, ?, ?, ?, ?)";
 

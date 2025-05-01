@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enumModels.EventType;
+import ru.yandex.practicum.filmorate.model.enumModels.Operation;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.ResultSet;
@@ -47,6 +49,8 @@ public class ReviewDbStorage implements ReviewStorage {
 
         String idSql = "SELECT MAX(review_id) FROM reviews";
         int reviewId = jdbc.queryForObject(idSql, Integer.class);
+
+        UserDbStorage.addFeed(jdbc, review.getUserId(), reviewId, EventType.REVIEW, Operation.ADD);
         return findReviewById(reviewId).orElseThrow();
     }
 
@@ -67,11 +71,18 @@ public class ReviewDbStorage implements ReviewStorage {
                 "WHERE review_id = ?";
         jdbc.update(sql, review.getContent(), review.getPositive(), review.getUserId(), review.getFilmId(),
                 review.getUseful(), review.getReviewId());
+
+        UserDbStorage.addFeed(jdbc, review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
         return findReviewById(review.getReviewId()).orElseThrow();
     }
 
     @Override
     public void deleteReview(int reviewId) {
+        Optional<Review> review = findReviewById(reviewId);
+        if (review.isPresent()) {
+            UserDbStorage.addFeed(jdbc, review.get().getUserId(), reviewId, EventType.REVIEW, Operation.REMOVE);
+        }
+
         String sql = "DELETE FROM reviews WHERE review_id = ?";
         jdbc.update(sql, reviewId);
     }
