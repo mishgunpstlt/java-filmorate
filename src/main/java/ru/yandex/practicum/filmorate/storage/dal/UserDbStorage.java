@@ -106,12 +106,10 @@ public class UserDbStorage implements UserStorage {
 
     public Set<Friendship> getFriendsByUserId(int userId) {
         String sql = "SELECT * FROM friends WHERE requester_id = ?";
-        // Получаем список друзей, где статус подтвержден
         return new HashSet<>(jdbc.query(sql, new FriendshipRowMapper(), userId));
     }
 
     public Friendship addFriend(int requesterId, int addresseeId) {
-        // Проверяем: существует ли обратная заявка
         String checkReverseSql = "SELECT status_id FROM friends WHERE requester_id = ? AND addressee_id = ?";
         List<Integer> reverseStatuses = jdbc.queryForList(checkReverseSql, Integer.class, addresseeId, requesterId);
 
@@ -125,16 +123,13 @@ public class UserDbStorage implements UserStorage {
 
         if (reverseIsUnconfirmed) {
             if (!directExists) {
-                // Добавляем прямую запись
                 String insertConfirmed = "INSERT INTO friends (requester_id, addressee_id, status_id) VALUES (?, ?, ?)";
                 jdbc.update(insertConfirmed, requesterId, addresseeId, StatusFriendship.CONFIRMED.getId());
             } else {
-                // Обновляем прямую запись
                 String updateDirect = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
                 jdbc.update(updateDirect, StatusFriendship.CONFIRMED.getId(), requesterId, addresseeId);
             }
 
-            // Обновляем обратную запись
             String updateReverse = "UPDATE friends SET status_id = ? WHERE requester_id = ? AND addressee_id = ?";
             jdbc.update(updateReverse, StatusFriendship.CONFIRMED.getId(), addresseeId, requesterId);
 
@@ -147,7 +142,7 @@ public class UserDbStorage implements UserStorage {
             return new Friendship(requesterId, addresseeId, StatusFriendship.UNCONFIRMED);
         }
 
-        return null; // Уже существует или не требует действий
+        return null;
     }
 
     public void removeFriend(int requesterId, int addresseeId) {
