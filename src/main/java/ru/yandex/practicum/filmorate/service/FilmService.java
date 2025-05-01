@@ -10,10 +10,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -102,6 +100,27 @@ public class FilmService {
         Mpa mpa = filmDbStorage.getMpaById(id).get();
         log.info("Получен рейтинг по id={}: {}", id, mpa);
         return mpa;
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        List<Film> result = new ArrayList<>();
+
+        boolean searchByTitle = by.contains("title");
+        boolean searchByDirector = by.contains("director");
+
+        if (searchByTitle && searchByDirector) {
+            result = filmDbStorage.searchByTitleAndDirector(query);
+        } else if (searchByTitle) {
+            result = filmDbStorage.searchByTitle(query);
+        } else if (searchByDirector) {
+            result = filmDbStorage.searchByDirector(query);
+        }
+
+        log.info("Получен фильма с подстрокой = '{}', поиск по {}", query, by);
+
+        return result.stream()
+                .sorted(Comparator.comparing((Film f) -> f.getLikes().size()).reversed())
+                .collect(Collectors.toList());
     }
 
     public Director createDirector(Director director) {
