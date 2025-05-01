@@ -127,4 +127,18 @@ public class FilmController {
                 .map(FilmDto::toDto)
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/common")
+    public ResponseEntity<List<FilmDto>> getCommonFilms(
+            @RequestParam int userId,
+            @RequestParam int friendId) {
+
+        List<Film> films = filmService.getCommonFilmsSortedByPopularity(userId, friendId);
+
+        List<FilmDto> filmDtos = films.stream()
+                .map(FilmDto::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filmDtos);
+    }
 }
