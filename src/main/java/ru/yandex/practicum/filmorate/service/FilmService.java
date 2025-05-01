@@ -150,4 +150,8 @@ public class FilmService {
     public void deleteFilm(int filmId) {
         filmDbStorage.deleteFilmById(filmId);
     }
+
+    public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
+        return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+    }
 }

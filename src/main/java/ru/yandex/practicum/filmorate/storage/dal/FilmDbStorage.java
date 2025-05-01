@@ -591,4 +591,29 @@ public class FilmDbStorage implements FilmStorage {
                     LIMIT ?
                 """;
     }
+
+    public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
+        String sql = """
+        SELECT f.film_id AS film_id,
+               COUNT(l.user_id) AS like_count
+        FROM likes l
+        JOIN films f ON l.film_id = f.film_id
+        WHERE l.user_id IN (?, ?)
+          AND EXISTS (
+              SELECT 1 FROM likes l1
+              WHERE l1.user_id = ? AND l1.film_id = l.film_id
+          )
+          AND EXISTS (
+              SELECT 1 FROM likes l2
+              WHERE l2.user_id = ? AND l2.film_id = l.film_id
+          )
+        GROUP BY f.film_id
+        ORDER BY like_count DESC;
+    """;
+
+        return jdbc.query(sql, (rs, rowNum) -> {
+            int filmId = rs.getInt("film_id");
+            return findFilmById(filmId).orElseThrow();
+        }, userId, friendId, userId, friendId);
+    }
 }
