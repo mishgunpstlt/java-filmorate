@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.dal.dto.FriendshipDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.UserDto;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -82,6 +83,7 @@ public class UserController {
                     return userService.getUserById(friendId);
                 })
                 .map((Optional<User> user) -> UserDto.fromModel(user.get()))
+                .sorted(Comparator.comparingInt(UserDto::getId))
                 .collect(Collectors.toList());
     }
 

@@ -87,7 +87,7 @@ public class UserDbStorage implements UserStorage {
             result.setFriends(getFriendsByUserId(id));
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException ignored) {
-            return Optional.empty();
+            throw new NotFoundException("Пользователя с id=" + id + " нет.");
         }
     }
 

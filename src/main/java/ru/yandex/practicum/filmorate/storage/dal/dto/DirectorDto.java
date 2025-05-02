@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dal.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Director;
 
 @Data
 public class DirectorDto {
     private int id;
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
 
     // Преобразование из модели Director в DTO

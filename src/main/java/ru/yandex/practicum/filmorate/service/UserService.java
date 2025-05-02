@@ -127,6 +127,10 @@ public class UserService {
 
         }
         Map<Integer, Set<Integer>> allLikes = userDbStorage.getAllLikes();
+        if (allLikes.size() == 1) {
+            log.error("Нет рекомендаций: только один пользователь или нет общих лайков");
+            return List.of();
+        }
 
         int mostSimilarUserId = -1;
         int maxCommonLikes = -1;
@@ -145,7 +149,7 @@ public class UserService {
             }
         }
 
-        if (mostSimilarUserId == 1) {
+        if (mostSimilarUserId == -1) {
             log.error("Нет рекомендаций: только один пользователь или нет общих лайков");
             return List.of();
         }
