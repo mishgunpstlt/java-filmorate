@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = "reviewId")
 public class Review {
     private int reviewId;
+    @NotBlank
     private String content;
     @JsonProperty("isPositive")
     @NotNull(message = "Not null")

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS film_director (
   director_id INTEGER NOT NULL,
   PRIMARY KEY (film_id, director_id),
   FOREIGN KEY (film_id) REFERENCES films(film_id),
-  FOREIGN KEY (director_id) REFERENCES directors(director_id)
+  FOREIGN KEY (director_id) REFERENCES directors(director_id) ON DELETE CASCADE
 );
 
 -- Создание таблицы отзывов
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS review_likes (
     user_id INTEGER NOT NULL,
     is_like BOOLEAN NOT NULL,
     PRIMARY KEY (review_id, user_id),
-    FOREIGN KEY (review_id) REFERENCES reviews (review_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    FOREIGN KEY (review_id) REFERENCES reviews (review_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
 ALTER TABLE films ADD FOREIGN KEY (mpa_id) REFERENCES mpas(mpa_id);
@@ -121,7 +121,7 @@ ALTER TABLE friends ADD FOREIGN KEY (addressee_id) REFERENCES users (user_id);
 
 ALTER TABLE friends ADD FOREIGN KEY (status_id) REFERENCES status (status_id);
 
-ALTER TABLE feed ADD FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE feed ADD FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE;
 
 ALTER TABLE feed ADD FOREIGN KEY (event_type_id) REFERENCES event_type (type_id);
 

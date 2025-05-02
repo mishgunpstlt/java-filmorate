@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -8,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 @Data
 public class ReviewDto {
     private int reviewId;
+    @NotBlank
     private String content;
 
     @JsonProperty("isPositive")

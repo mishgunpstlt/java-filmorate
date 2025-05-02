@@ -180,9 +180,14 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public void addLike(int filmId, int userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-        jdbc.update(sql, filmId, userId);
+        String checkSql = "SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbc.queryForObject(checkSql, Integer.class, filmId, userId);
         UserDbStorage.addFeed(jdbc, userId, filmId, EventType.LIKE, Operation.ADD);
+
+        if (count == null || count == 0) {
+            String insertSql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+            jdbc.update(insertSql, filmId, userId);
+        }
     }
 
     public void removeLike(int filmId, int userId) {
@@ -219,7 +224,12 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilms(int count, int genreId, int year) {
         String sql = getPopularFilmsQuery(genreId, year);
 
-        List<Film> films = jdbc.query(sql, mapper, year, genreId, count);
+        List<Film> films;
+        if (genreId != 0) {
+            films = jdbc.query(sql, mapper, year, genreId, count);
+        } else {
+            films = jdbc.query(sql, mapper, year, count);
+        }
         enrichFilms(films);
 
         for (Film film : films) {
@@ -566,12 +576,10 @@ public class FilmDbStorage implements FilmStorage {
         if (genreId == 0 && year == 0) {
             variablePart = """
                         WHERE EXTRACT(YEAR FROM releaseDate) <> ?
-                        AND genre_id <> ?
                     """;
         } else if (genreId == 0) {
             variablePart = """
                         WHERE EXTRACT(YEAR FROM releaseDate) = ?
-                        AND genre_id <> ?
                     """;
         } else if (year == 0) {
             variablePart = """

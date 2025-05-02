@@ -67,13 +67,13 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review updateReview(Review review) {
-        String sql = "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ? " +
+        String sql = "UPDATE reviews SET content = ?, is_positive = ? " +
                 "WHERE review_id = ?";
-        jdbc.update(sql, review.getContent(), review.getPositive(), review.getUserId(), review.getFilmId(),
-                review.getUseful(), review.getReviewId());
+        jdbc.update(sql, review.getContent(), review.getPositive(), review.getReviewId());
 
-        UserDbStorage.addFeed(jdbc, review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
-        return findReviewById(review.getReviewId()).orElseThrow();
+        Review reviewDB = findReviewById(review.getReviewId()).orElseThrow();
+        UserDbStorage.addFeed(jdbc, reviewDB.getUserId(), reviewDB.getReviewId(), EventType.REVIEW, Operation.UPDATE);
+        return reviewDB;
     }
 
     @Override
