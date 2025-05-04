@@ -422,7 +422,7 @@ public class FilmDbStorage implements FilmStorage {
             }, directorId);
             return Optional.ofNullable(director);
         } catch (EmptyResultDataAccessException ignored) {
-            throw new NotFoundException("Режиссер с Id " + directorId + " не найден");
+            return Optional.empty();
         }
     }
 

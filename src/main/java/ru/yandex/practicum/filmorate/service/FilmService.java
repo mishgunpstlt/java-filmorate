@@ -132,27 +132,41 @@ public class FilmService {
     }
 
     public Director createDirector(Director director) {
-        return filmDbStorage.createDirector(director);
+        Director createdDirector = filmDbStorage.createDirector(director);
+        log.info("Создан режиссер: {}", createdDirector);
+        return createdDirector;
     }
 
     public Optional<Director> getDirectorById(int directorId) {
-        return filmDbStorage.getDirectorById(directorId);
+        Optional<Director> director = getExsitsDirector(directorId); // тут зашита проверка
+        log.info("Получен режиссер по id {}: {}", directorId, director);
+        return director;
     }
 
     public List<Director> getAllDirectors() {
-        return filmDbStorage.getAllDirectors();
+        List<Director> directors = filmDbStorage.getAllDirectors();
+        log.info("Получен список всех режиссеров: {}", directors);
+        return directors;
     }
 
     public Director updateDirector(Director director) {
-        return filmDbStorage.updateDirector(director);
+        getExsitsDirector(director.getDirectorId());
+        Director updatedDirector = filmDbStorage.updateDirector(director);
+        log.info("Обновлен режиссер: {}", updatedDirector);
+        return updatedDirector;
     }
 
     public void deleteDirector(int directorId) {
+        getExsitsDirector(directorId);
         filmDbStorage.deleteDirector(directorId);
+        log.info("Удален режиссер с id={}", directorId);
     }
 
     public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
-        return filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
+        getExsitsDirector(directorId);
+        List<Film> films = filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
+        log.info("Получены фильмы режиссера с id={}, отсортированные по '{}': {}", directorId, sortBy, films);
+        return films;
     }
 
     public void deleteFilm(int filmId) {
@@ -161,5 +175,16 @@ public class FilmService {
 
     public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
         return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+    }
+
+    private Optional<Director> getExsitsDirector(int directorId) {
+        Optional<Director> director = filmDbStorage.getDirectorById(directorId);
+        if (director.isPresent()) {
+            log.info("Режиссер с id={} найден", directorId);
+            return director;
+        } else {
+            log.error("Режиссер с id={} не найден", directorId);
+            throw new NotFoundException("Режиссер с id=" + directorId + " не найден");
+        }
     }
 }
