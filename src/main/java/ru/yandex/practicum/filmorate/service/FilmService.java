@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -73,6 +74,13 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count, int genreId, int year) {
+        if (year < 1895 && year != 0) {
+            throw new BadRequestException("Год выхода фильма не может быть ранее 1895 года");
+        }
+        if (genreId != 0) {
+            getGenreById(genreId);
+        }
+
         List<Film> popularFilms = filmDbStorage.getPopularFilms(count, genreId, year);
         log.info("Получены популярные фильмы: {}", popularFilms);
         return popularFilms;
