@@ -13,6 +13,11 @@ public class FilmRowMapper implements RowMapper<Film> {
 
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        return mapFilm(resultSet);
+    }
+
+    // Метод для маппинга основных данных фильма
+    public Film mapFilm(ResultSet resultSet) throws SQLException {
         Film film = new Film();
         film.setId(resultSet.getInt("film_id"));
         film.setName(resultSet.getString("name"));
@@ -21,7 +26,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDuration(resultSet.getInt("duration"));
 
         int mpaId = resultSet.getInt("mpa_id");
-        Mpa mpa = new Mpa(mpaId, null); // Устанавливаем только id, имя пока не задаём
+        Mpa mpa = new Mpa(mpaId, null);
         film.setMpa(mpa);
 
         return film;

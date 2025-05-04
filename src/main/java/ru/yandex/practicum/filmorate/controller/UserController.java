@@ -2,13 +2,19 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.dal.dto.FeedDto;
+import ru.yandex.practicum.filmorate.storage.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.FriendshipDto;
 import ru.yandex.practicum.filmorate.storage.dal.dto.UserDto;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,6 +47,16 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable int userId) {
+        try {
+            userService.deleteUser(userId);
+            return ResponseEntity.noContent().build(); // 204
+        } catch (NotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404
+        }
+    }
+
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable int id) {
         return UserDto.fromModel(userService.getUserById(id).get());
@@ -67,6 +83,7 @@ public class UserController {
                     return userService.getUserById(friendId);
                 })
                 .map((Optional<User> user) -> UserDto.fromModel(user.get()))
+                .sorted(Comparator.comparingInt(UserDto::getId))
                 .collect(Collectors.toList());
     }
 
@@ -75,5 +92,17 @@ public class UserController {
         return userService.findMutualFriends(id, otherId).stream()
                 .map(UserDto::fromModel)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<FilmDto> getRecommendations(@PathVariable int id) {
+        return userService.getRecommendations(id).stream()
+                .map(FilmDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<FeedDto> getFeed(@PathVariable int id) {
+        return FeedDto.fromModel(userService.getFeed(id));
     }
 }
