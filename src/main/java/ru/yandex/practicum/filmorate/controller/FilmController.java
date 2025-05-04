@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage.log;
-
 @RestController
 @RequestMapping("/films")
 public class FilmController {
