@@ -174,7 +174,11 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
-        return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        if (userDbStorage.findUserById(userId).isPresent() && userDbStorage.findUserById(friendId).isPresent()) {
+            return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        } else {
+            throw new NotFoundException("Данные пользователи не найдены!");
+        }
     }
 
     private Optional<Director> getExsitsDirector(int directorId) {

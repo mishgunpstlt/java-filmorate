@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.BadRequestException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.enumModels.EventType;
 import ru.yandex.practicum.filmorate.model.enumModels.Operation;
@@ -24,26 +22,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review addReview(Review review) {
-        if (review.getUserId() < 0) {
-            throw new NotFoundException("Invalid userId: " + review.getUserId());
-        }
-
-        if (!isUserExists(review.getUserId())) {
-            throw new BadRequestException("User with ID " + review.getUserId() + " not found");
-        }
-
-        if (review.getFilmId() < 0) {
-            throw new NotFoundException("Invalid filmId: " + review.getFilmId());
-        }
-
-        if (review.getFilmId() == 0) {
-            throw new BadRequestException("Invalid filmId: " + review.getFilmId());
-        }
-
-        if (!isFilmExists(review.getFilmId())) {
-            throw new NotFoundException("Film with ID " + review.getFilmId() + " not found");
-        }
-
         String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
         jdbc.update(sql, review.getContent(), review.getPositive(), review.getUserId(), review.getFilmId(), 0);
 
@@ -53,17 +31,6 @@ public class ReviewDbStorage implements ReviewStorage {
         UserDbStorage.addFeed(jdbc, review.getUserId(), reviewId, EventType.REVIEW, Operation.ADD);
         return findReviewById(reviewId).orElseThrow();
     }
-
-    public boolean isUserExists(int userId) {
-        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
-        return jdbc.queryForObject(sql, Integer.class, userId) > 0;
-    }
-
-    private boolean isFilmExists(int filmId) {
-        String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
-        return jdbc.queryForObject(sql, Integer.class, filmId) > 0;
-    }
-
 
     @Override
     public Review updateReview(Review review) {
