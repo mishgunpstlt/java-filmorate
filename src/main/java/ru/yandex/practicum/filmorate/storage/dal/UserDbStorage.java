@@ -202,6 +202,8 @@ public class UserDbStorage implements UserStorage {
             log.warn("Неправильный вызов метода добавления события");
             throw new IllegalArgumentException("Неправильный вызов метода добавления события");
         }
+        log.debug("Добавлена запись в ленту событий: userId={}, entityId={}, eventType={}, operation={}",
+                userId, entityId, eventType, operation);
     }
 
     public Collection<Feed> getFeed(int userId) {

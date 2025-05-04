@@ -225,11 +225,16 @@ public class FilmDbStorage implements FilmStorage {
         String sql = getPopularFilmsQuery(genreId, year);
 
         List<Film> films;
-        if (genreId != 0) {
-            films = jdbc.query(sql, mapper, year, genreId, count);
-        } else {
+        if (genreId == 0 && year == 0) {
+            films = jdbc.query(sql, mapper, count);
+        } else if (genreId == 0) {
             films = jdbc.query(sql, mapper, year, count);
+        } else if (year == 0) {
+            films = jdbc.query(sql, mapper, genreId, count);
+        } else {
+            films = jdbc.query(sql, mapper, year, genreId, count);
         }
+
         enrichFilms(films);
 
         for (Film film : films) {
@@ -417,7 +422,7 @@ public class FilmDbStorage implements FilmStorage {
             }, directorId);
             return Optional.ofNullable(director);
         } catch (EmptyResultDataAccessException ignored) {
-            throw new NotFoundException("Режиссер с Id " + directorId + " не найден");
+            return Optional.empty();
         }
     }
 
@@ -574,20 +579,19 @@ public class FilmDbStorage implements FilmStorage {
     private String getPopularFilmsQuery(int genreId, int year) {
         String variablePart;
         if (genreId == 0 && year == 0) {
-            variablePart = """
-                        WHERE EXTRACT(YEAR FROM releaseDate) <> ?
-                    """;
+            variablePart = "";
         } else if (genreId == 0) {
             variablePart = """
                         WHERE EXTRACT(YEAR FROM releaseDate) = ?
                     """;
         } else if (year == 0) {
             variablePart = """
-                        WHERE EXTRACT(YEAR FROM releaseDate) <> ?
+                        JOIN film_genre fg ON f.film_id = fg.film_id
                         AND genre_id = ?
                     """;
         } else {
             variablePart = """
+                        JOIN film_genre fg ON f.film_id = fg.film_id
                         WHERE EXTRACT(YEAR FROM releaseDate) = ?
                         AND genre_id = ?
                     """;
@@ -596,7 +600,6 @@ public class FilmDbStorage implements FilmStorage {
                     SELECT f.*, COUNT(DISTINCT l.user_id) AS like_count
                     FROM films f
                     LEFT JOIN likes l ON f.film_id = l.film_id
-                    LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 """ + variablePart + """
                     GROUP BY f.film_id
                     ORDER BY like_count DESC

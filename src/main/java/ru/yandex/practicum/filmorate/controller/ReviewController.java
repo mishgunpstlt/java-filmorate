@@ -42,7 +42,7 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     public ReviewDto getReviewById(@PathVariable int id) {
-        Review review = reviewService.getReviewById(id);
+        Review review = reviewService.getReviewById(id).get();
         return ReviewDto.fromModel(review);
     }
 

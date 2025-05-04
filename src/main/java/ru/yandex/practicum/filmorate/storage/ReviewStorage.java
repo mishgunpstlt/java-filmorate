@@ -8,8 +8,6 @@ import java.util.Optional;
 public interface ReviewStorage {
     Review addReview(Review review);
 
-    boolean isUserExists(int userId);
-
     Review updateReview(Review review);
 
     void deleteReview(int reviewId);

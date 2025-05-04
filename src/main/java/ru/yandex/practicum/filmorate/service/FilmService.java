@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -73,6 +74,13 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count, int genreId, int year) {
+        if (year < 1895 && year != 0) {
+            throw new BadRequestException("Год выхода фильма не может быть ранее 1895 года");
+        }
+        if (genreId != 0) {
+            getGenreById(genreId);
+        }
+
         List<Film> popularFilms = filmDbStorage.getPopularFilms(count, genreId, year);
         log.info("Получены популярные фильмы: {}", popularFilms);
         return popularFilms;
@@ -124,27 +132,41 @@ public class FilmService {
     }
 
     public Director createDirector(Director director) {
-        return filmDbStorage.createDirector(director);
+        Director createdDirector = filmDbStorage.createDirector(director);
+        log.info("Создан режиссер: {}", createdDirector);
+        return createdDirector;
     }
 
     public Optional<Director> getDirectorById(int directorId) {
-        return filmDbStorage.getDirectorById(directorId);
+        Optional<Director> director = getExsitsDirector(directorId); // тут зашита проверка
+        log.info("Получен режиссер по id {}: {}", directorId, director);
+        return director;
     }
 
     public List<Director> getAllDirectors() {
-        return filmDbStorage.getAllDirectors();
+        List<Director> directors = filmDbStorage.getAllDirectors();
+        log.info("Получен список всех режиссеров: {}", directors);
+        return directors;
     }
 
     public Director updateDirector(Director director) {
-        return filmDbStorage.updateDirector(director);
+        getExsitsDirector(director.getDirectorId());
+        Director updatedDirector = filmDbStorage.updateDirector(director);
+        log.info("Обновлен режиссер: {}", updatedDirector);
+        return updatedDirector;
     }
 
     public void deleteDirector(int directorId) {
+        getExsitsDirector(directorId);
         filmDbStorage.deleteDirector(directorId);
+        log.info("Удален режиссер с id={}", directorId);
     }
 
     public List<Film> getFilmsByDirectorSorted(int directorId, String sortBy) {
-        return filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
+        getExsitsDirector(directorId);
+        List<Film> films = filmDbStorage.getFilmsByDirectorSorted(directorId, sortBy);
+        log.info("Получены фильмы режиссера с id={}, отсортированные по '{}': {}", directorId, sortBy, films);
+        return films;
     }
 
     public void deleteFilm(int filmId) {
@@ -152,6 +174,21 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
-        return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        if (userDbStorage.findUserById(userId).isPresent() && userDbStorage.findUserById(friendId).isPresent()) {
+            return filmDbStorage.getCommonFilmsSortedByPopularity(userId, friendId);
+        } else {
+            throw new NotFoundException("Данные пользователи не найдены!");
+        }
+    }
+
+    private Optional<Director> getExsitsDirector(int directorId) {
+        Optional<Director> director = filmDbStorage.getDirectorById(directorId);
+        if (director.isPresent()) {
+            log.info("Режиссер с id={} найден", directorId);
+            return director;
+        } else {
+            log.error("Режиссер с id={} не найден", directorId);
+            throw new NotFoundException("Режиссер с id=" + directorId + " не найден");
+        }
     }
 }

@@ -15,9 +15,10 @@ public class ReviewDto {
     @JsonProperty("isPositive")
     @NotNull(message = "Not null")
     private Boolean positive;
-
-    private int userId;
-    private int filmId;
+    @NotNull(message = "Not null")
+    private Integer userId;
+    @NotNull(message = "Not null")
+    private Integer filmId;
     private int useful;
 
     public static ReviewDto fromModel(Review review) {

@@ -108,6 +108,7 @@ public class UserService {
     public Collection<Feed> getFeed(int userId) {
         getExistsUser(userId);
 
+        log.info("Получена лента событий пользователя с id={}", userId);
         return userDbStorage.getFeed(userId);
     }
 
