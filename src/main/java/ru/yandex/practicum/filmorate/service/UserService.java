@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.RelationshipException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -19,9 +19,11 @@ import java.util.Set;
 public class UserService {
 
     private final UserDbStorage userDbStorage;
+    private final FilmDbStorage filmDbStorage;
 
-    public UserService(UserDbStorage userDbStorage) {
+    public UserService(UserDbStorage userDbStorage, FilmDbStorage filmDbStorage) {
         this.userDbStorage = userDbStorage;
+        this.filmDbStorage = filmDbStorage;
     }
 
     public User addUser(User user) {
@@ -72,6 +74,10 @@ public class UserService {
         return userDbStorage.addFriend(userId, friendId);
     }
 
+    public void deleteUser(int userId) {
+        userDbStorage.deleteById(userId);
+    }
+
     public void removeFriend(int userId, int friendId) {
         if (userId == friendId) {
             log.error("Попытка удалить себя же из друзья id={}", userId);
@@ -99,9 +105,61 @@ public class UserService {
         return mutualFriends;
     }
 
+    public Collection<Feed> getFeed(int userId) {
+        getExistsUser(userId);
+
+        log.info("Получена лента событий пользователя с id={}", userId);
+        return userDbStorage.getFeed(userId);
+    }
+
     private void setNameIfEmpty(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public List<Film> getRecommendations(int userId) {
+        userDbStorage.findUserById(userId);
+
+        Set<Integer> userLikes = userDbStorage.getLikesByUserId(userId);
+        if (userLikes.isEmpty()) {
+            log.error("Пользователь не оставлял лайк ни одному фильму");
+            return List.of();
+
+        }
+        Map<Integer, Set<Integer>> allLikes = userDbStorage.getAllLikes();
+        if (allLikes.size() == 1) {
+            log.error("Нет рекомендаций: только один пользователь или нет общих лайков");
+            return List.of();
+        }
+
+        int mostSimilarUserId = -1;
+        int maxCommonLikes = -1;
+
+        for (Map.Entry<Integer, Set<Integer>> entry : allLikes.entrySet()) {
+            int otherUserId = entry.getKey();
+            if (otherUserId == userId) continue;
+
+            Set<Integer> otherUserLikes = entry.getValue();
+            Set<Integer> common = new HashSet<>(userLikes);
+            common.retainAll(otherUserLikes);
+
+            if (common.size() > maxCommonLikes) {
+                maxCommonLikes = common.size();
+                mostSimilarUserId = otherUserId;
+            }
+        }
+
+        if (mostSimilarUserId == -1) {
+            log.error("Нет рекомендаций: только один пользователь или нет общих лайков");
+            return List.of();
+        }
+
+        Set<Integer> mostSimilarUserLikes = allLikes.get(mostSimilarUserId);
+        mostSimilarUserLikes.removeAll(userLikes);
+
+        List<Film> recommendedFilms = filmDbStorage.getFilmsByIds(mostSimilarUserLikes);
+        log.info("Найдены рекомендованные фильмы для пользователя: {}", recommendedFilms);
+        return recommendedFilms;
     }
 }

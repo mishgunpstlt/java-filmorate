@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -33,5 +30,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Optional<Film> findFilmById(int id) {
         return Optional.ofNullable(films.get(id));
+    }
+
+    @Override
+    public List<Film> getCommonFilmsSortedByPopularity(int userId, int friendId) {
+        return List.of();
     }
 }
